@@ -23,6 +23,6 @@ public class AccountManagementApplication {
 
 	public static void main(String[] args) {
 		//SpringApplication.run(AccountManagementApplication.class, args);
-		System.out.println("This is Jenkins Demo with maven aescascsa wfwefwe sgsrgsr odruogdrghdrg edgvdsgvbds");
+		System.out.println("This is Jenkins Demo with maven ");
 	}
 }
