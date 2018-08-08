@@ -14,18 +14,5 @@ node {
             env.version = pom.version
         }
 
-        stage('Image') {
-            dir ('AccountManagement') {
-                def app = docker.build "localhost:5000/AccountManagement:${env.version}"
-                app.push()
-            }
-        }
-
-        stage ('Run') {
-            docker.image("localhost:5000/AccountManagement:${env.version}").run('-p 8761:8761 -h discovery --name account')
-        }
-
-        stage ('Final') {
-            build job: 'AccountManagement', wait: false
-        }      
+       
 }
