@@ -1,33 +1,21 @@
-def workspace;
 node {
-    
-    stage ('Checkout')
-    {
-     checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'd12dfe77-f776-4a6c-93c5-664de10f630d', url: 'https://github.com/karthickRavi555/Jenkins-Testing.git']]])
-    workspace =pwd()
-    }
-     stage('Build') {
-            sh 'mvn clean install'
-
-            def pom = readMavenPom file:'pom.xml'
-            print pom.version
-            env.version = pom.version
-        }
-
-         stage('Image') {
-            dir ('AccountManagement') {
-                def app = docker.build "localhost:5000/AccountManagement:${env.version}"
-                app.push()
-            }
-        }
-
-        stage ('Run') {
-            docker.image("localhost:5000/AccountManagement:${env.version}").run('-p 8761:8761 -h discovery --name account')
-        }
-
-        stage ('Final') {
-            build job: 'AccountManagement', wait: false
-        }      
-
-    }
+   def mvnHome
+   stage('Preparation') { // for display purposes
+checkout([$class: 'SubversionSCM', additionalCredentials: [], excludedCommitMessages: '', excludedRegions: '', excludedRevprop: '', excludedUsers: '', filterChangelog: false, ignoreDirPropChanges: false, includedRegions: '', locations: [[cancelProcessOnExternalsFail: true, credentialsId: '1cb184f4-a300-4da6-ab2b-fa5dc356e372', depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: 'http://192.168.18.45/svn/SilveradoStages/trunk/Jenkins/AccountManagement']], quietOperation: true, workspaceUpdater: [$class: 'UpdateUpdater']])
+      // Get the Maven tool.
+      // ** NOTE: This 'M3' Maven tool must be configured
+      // **       in the global configuration.           
+      mvnHome = tool name: 'maven', type: 'maven'
+   }
+   stage('Build') {
+      // Run the maven build
+      if (isUnix()) {
+         sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
+      } else {
+         bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
+      }
+   }
+   stage('Results') {
+      archive 'target/*.jar'
+   }
 }
